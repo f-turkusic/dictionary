@@ -76,6 +76,22 @@ button[type="submit"], #translateBtn, #darkModeToggle {
     margin-bottom: 5px;
 }
 
+/* cancel edit button */
+#cancelEditBtn {
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: #ef4444; /* red-ish for cancel */
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+#cancelEditBtn:hover { background: #dc2626; }
+
+@media (max-width: 720px) {
+    #cancelEditBtn { margin-left: 0; }
+}
+
 button[type="submit"] {
     background-color: #4CAF50;
     color: white;

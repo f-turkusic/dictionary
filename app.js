@@ -1,5 +1,6 @@
 // ===================== DATA & LOCALSTORAGE =====================
 let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
+let editingIndex = null; // index of item being edited, or null
 
 function saveDictionary() {
     localStorage.setItem("dictionary", JSON.stringify(dictionary));
@@ -42,16 +43,18 @@ function renderList(list = dictionary) {
 }
 
 function editItem(item) {
-    const newWord = prompt("Uredi riječ:", item.word);
-    const newTranslation = prompt("Uredi prijevod:", item.translation);
+    // Put the clicked item into the form so user can edit inline
+    const idx = dictionary.indexOf(item);
+    if (idx === -1) return;
 
-    if (!newWord || !newTranslation) return;
+    editingIndex = idx;
+    document.getElementById('wordInput').value = item.word;
+    document.getElementById('translationInput').value = item.translation;
+    document.getElementById('wordInput').focus();
 
-    item.word = newWord.trim();
-    item.translation = newTranslation.trim();
-
-    saveDictionary();
-    renderList();
+    // change submit button text and show cancel button
+    document.getElementById('submitBtn').textContent = 'Snimi izmjenu';
+    document.getElementById('cancelEditBtn').hidden = false;
 }
 
 function deleteItem(item) {
@@ -70,14 +73,31 @@ document.getElementById("addWordForm").addEventListener("submit", e => {
     const word = document.getElementById("wordInput").value.trim();
     const translation = document.getElementById("translationInput").value.trim();
     if (!word || !translation) return;
-
-    dictionary.push({ word, translation });
+    if (editingIndex !== null && editingIndex >= 0 && editingIndex < dictionary.length) {
+        // save edits into existing item
+        dictionary[editingIndex] = { word, translation };
+        editingIndex = null;
+        // restore submit button text + hide cancel
+        document.getElementById('submitBtn').textContent = 'Dodaj riječ';
+        document.getElementById('cancelEditBtn').hidden = true;
+    } else {
+        dictionary.push({ word, translation });
+    }
     saveDictionary();
 
     document.getElementById("wordInput").value = "";
     document.getElementById("translationInput").value = "";
 
     renderList();
+});
+
+// cancel editing handler
+document.getElementById('cancelEditBtn').addEventListener('click', () => {
+    editingIndex = null;
+    document.getElementById('wordInput').value = '';
+    document.getElementById('translationInput').value = '';
+    document.getElementById('submitBtn').textContent = 'Dodaj riječ';
+    document.getElementById('cancelEditBtn').hidden = true;
 });
 
 // ===================== SEARCH / FILTER =====================

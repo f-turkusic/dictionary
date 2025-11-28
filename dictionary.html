@@ -26,7 +26,7 @@
         <button type="button" id="translateBtn">Translate</button>
     </div>
 
-    <div class="row inputs">
+        <div class="row inputs">
         <div class="input-with-icon">
             <input id="translationInput" type="text" placeholder="Prijevod" required>
             <button type="button" class="paste-icon" data-target="translationInput" aria-label="Paste into translation" title="Paste clipboard into translation">
@@ -36,7 +36,10 @@
                 </svg>
             </button>
         </div>
-        <button type="submit">Dodaj riječ</button>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button id="submitBtn" type="submit">Dodaj riječ</button>
+            <button id="cancelEditBtn" type="button" hidden>Otkaži</button>
+        </div>
     </div>
 </form>
 
