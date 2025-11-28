@@ -1,23 +1,42 @@
 let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
 
-function renderList() {
+function renderList(list = dictionary) { // list je opcionalan, default je cijeli dictionary
     const listDiv = document.getElementById("wordList");
     listDiv.innerHTML = "";
 
-    dictionary.forEach(item => {
+    list.forEach(item => {
         const row = document.createElement("div");
         row.style.display = "flex";
         row.style.justifyContent = "space-between";
+        row.style.alignItems = "center";
         row.style.marginBottom = "5px";
+        row.style.padding = "10px 15px";
+        row.style.background = "white";
+        row.style.borderRadius = "8px";
+        row.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
 
         const text = document.createElement("span");
         text.textContent = `${item.word} — ${item.translation}`;
 
+        const editBtn = document.createElement("button");
+        editBtn.textContent = "✎";
+        editBtn.style.marginRight = "10px";
+
+        editBtn.addEventListener("click", function () {
+            const newWord = prompt("Uredi riječ:", item.word);
+            const newTranslation = prompt("Uredi prijevod:", item.translation);
+
+            if(newWord && newTranslation){
+                item.word = newWord.trim();
+                item.translation = newTranslation.trim();
+                localStorage.setItem("dictionary", JSON.stringify(dictionary));
+                renderList();
+            }
+        });
+
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "X";
-        deleteBtn.style.marginLeft = "10px";
         deleteBtn.style.color = "red";
-        deleteBtn.style.cursor = "pointer";
 
         deleteBtn.addEventListener("click", function () {
             const index = dictionary.indexOf(item);
@@ -27,10 +46,12 @@ function renderList() {
         });
 
         row.appendChild(text);
+        row.appendChild(editBtn);
         row.appendChild(deleteBtn);
         listDiv.appendChild(row);
     });
 }
+
 
 // Render odmah po učitavanju
 renderList();
@@ -87,3 +108,18 @@ if(localStorage.getItem("darkMode") === "enabled"){
 
 // Postavi početni tekst dugmeta
 updateToggleText();
+
+
+const searchInput = document.getElementById("searchInput");
+
+searchInput.addEventListener("input", function() {
+    const query = this.value.toLowerCase();
+    
+    // Filtriraj dictionary
+    const filtered = dictionary.filter(item => 
+        item.word.toLowerCase().includes(query) || 
+        item.translation.toLowerCase().includes(query)
+    );
+
+    renderList(filtered);
+});
