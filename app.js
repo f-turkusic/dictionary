@@ -127,3 +127,23 @@ translateBtn.addEventListener("click", () => {
     const url = `https://translate.google.com/?sl=auto&tl=bs&text=${encodeURIComponent(word)}&op=translate`;
     window.open(url, "_blank");
 });
+
+// Auto-fill word if URL contains ?word=something
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    const wordFromURL = params.get("word");
+
+    if (wordFromURL) {
+        const wordInput = document.getElementById("wordInput"); // ← ispravljeno
+        if (wordInput) {
+            wordInput.value = wordFromURL;
+            wordInput.focus();
+        }
+
+        // Ako želiš da automatski prebaci fokus na polje za prijevod:
+        const translationInput = document.getElementById("translationInput");
+        if (translationInput) {
+            translationInput.focus();
+        }
+    }
+})();
