@@ -53,3 +53,37 @@ form.addEventListener("submit", function(e) {
 
     renderList();
 });
+
+const darkModeToggle = document.getElementById("darkModeToggle");
+
+// Funkcija za update teksta dugmeta
+function updateToggleText() {
+    if(document.body.classList.contains("dark-mode")){
+        darkModeToggle.textContent = "Light Mode";
+    } else {
+        darkModeToggle.textContent = "Dark Mode";
+    }
+}
+
+// Event listener za toggle
+darkModeToggle.addEventListener("click", function() {
+    document.body.classList.toggle("dark-mode");
+
+    // Spremanje preferencije
+    if(document.body.classList.contains("dark-mode")){
+        localStorage.setItem("darkMode", "enabled");
+    } else {
+        localStorage.setItem("darkMode", "disabled");
+    }
+
+    // Update teksta dugmeta
+    updateToggleText();
+});
+
+// Provjera pri učitavanju stranice
+if(localStorage.getItem("darkMode") === "enabled"){
+    document.body.classList.add("dark-mode");
+}
+
+// Postavi početni tekst dugmeta
+updateToggleText();
