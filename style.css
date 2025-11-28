@@ -41,6 +41,10 @@ input {
 /* compact row inputs: make the first input expand while the button stays fixed */
 .row.inputs input { flex: 1; }
 
+/* consistent heights so inputs and buttons appear aligned */
+.row.inputs input, .input-with-icon input { min-height: 44px; height: 44px; }
+button[type="submit"], #translateBtn { min-height: 44px; }
+
 /* Keep translate button visually consistent with other action buttons */
 #translateBtn {
     padding: 10px 12px;
@@ -136,7 +140,8 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
 }
 
 /* Lista riječi */
-#wordList div {
+/* word list rows */
+#wordList .word-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -148,9 +153,12 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
     transition: transform 0.2s, background 0.3s;
 }
 
-#wordList div:hover {
+#wordList .word-row:hover {
     transform: scale(1.02);
 }
+
+/* row actions */
+#wordList .item-actions { display: flex; gap: 12px; align-items: center; justify-content: flex-end; min-width: 96px; }
 
 #wordList button {
     cursor: pointer;
@@ -161,6 +169,13 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
 #wordList button:hover {
     opacity: 0.8;
 }
+
+/* ensure long text doesn't push icons out; allow wrapping but set min-width 0 on text */
+.item-text { flex: 1 1 auto; min-width: 0; padding-right: 8px; }
+
+.item-actions button { padding: 8px 10px; border-radius: 6px; background: transparent; color: #e11d48; }
+.item-actions .edit-btn { color: #ff6b6b; }
+.item-actions .delete-btn { color: #ff4d4f; }
 
 /* Dark mode */
 body.dark-mode {

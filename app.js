@@ -12,19 +12,31 @@ function renderList(list = dictionary) {
 
     list.forEach(item => {
         const row = document.createElement("div");
+        row.className = 'word-row';
 
+        // text area (allow wrapping but keep it from pushing controls out)
         const text = document.createElement("span");
+        text.className = 'item-text';
         text.textContent = `${item.word} — ${item.translation}`;
 
+        // actions container to ensure icons are always aligned right
+        const actions = document.createElement('div');
+        actions.className = 'item-actions';
+
         const editBtn = document.createElement("button");
-        editBtn.textContent = "✎";
+        editBtn.className = 'edit-btn';
+        editBtn.innerHTML = '✎';
+        editBtn.title = 'Uredi';
         editBtn.onclick = () => editItem(item);
 
         const deleteBtn = document.createElement("button");
-        deleteBtn.textContent = "X";
+        deleteBtn.className = 'delete-btn';
+        deleteBtn.innerHTML = 'X';
+        deleteBtn.title = 'Obriši';
         deleteBtn.onclick = () => deleteItem(item);
 
-        row.append(text, editBtn, deleteBtn);
+        actions.append(editBtn, deleteBtn);
+        row.append(text, actions);
         listDiv.appendChild(row);
     });
 }
