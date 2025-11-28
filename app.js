@@ -1,6 +1,8 @@
+// ====== PODACI I LOCALSTORAGE ======
 let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
 
-function renderList(list = dictionary) { // list je opcionalan, default je cijeli dictionary
+// ====== RENDER LISTE ======
+function renderList(list = dictionary) {
     const listDiv = document.getElementById("wordList");
     listDiv.innerHTML = "";
 
@@ -18,15 +20,17 @@ function renderList(list = dictionary) { // list je opcionalan, default je cijel
         const text = document.createElement("span");
         text.textContent = `${item.word} — ${item.translation}`;
 
+        // EDIT dugme
         const editBtn = document.createElement("button");
         editBtn.textContent = "✎";
         editBtn.style.marginRight = "10px";
+        editBtn.style.cursor = "pointer";
 
         editBtn.addEventListener("click", function () {
             const newWord = prompt("Uredi riječ:", item.word);
             const newTranslation = prompt("Uredi prijevod:", item.translation);
 
-            if(newWord && newTranslation){
+            if (newWord && newTranslation) {
                 item.word = newWord.trim();
                 item.translation = newTranslation.trim();
                 localStorage.setItem("dictionary", JSON.stringify(dictionary));
@@ -34,9 +38,11 @@ function renderList(list = dictionary) { // list je opcionalan, default je cijel
             }
         });
 
+        // DELETE dugme
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "X";
         deleteBtn.style.color = "red";
+        deleteBtn.style.cursor = "pointer";
 
         deleteBtn.addEventListener("click", function () {
             const index = dictionary.indexOf(item);
@@ -52,13 +58,12 @@ function renderList(list = dictionary) { // list je opcionalan, default je cijel
     });
 }
 
-
-// Render odmah po učitavanju
+// ====== INICIJALNI RENDER ======
 renderList();
 
-// Dodavanje riječi
+// ====== DODAVANJE RIJEČI ======
 const form = document.getElementById("addWordForm");
-form.addEventListener("submit", function(e) {
+form.addEventListener("submit", function (e) {
     e.preventDefault();
 
     const word = document.getElementById("wordInput").value.trim();
@@ -75,51 +80,47 @@ form.addEventListener("submit", function(e) {
     renderList();
 });
 
+// ====== FILTER / PRETRAGA ======
+const searchInput = document.getElementById("searchInput");
+searchInput.addEventListener("input", function () {
+    const query = this.value.toLowerCase();
+
+    const filtered = dictionary.filter(item =>
+        item.word.toLowerCase().includes(query) ||
+        item.translation.toLowerCase().includes(query)
+    );
+
+    renderList(filtered);
+});
+
+// ====== DARK / LIGHT MODE ======
 const darkModeToggle = document.getElementById("darkModeToggle");
 
-// Funkcija za update teksta dugmeta
+// Update teksta dugmeta
 function updateToggleText() {
-    if(document.body.classList.contains("dark-mode")){
+    if (document.body.classList.contains("dark-mode")) {
         darkModeToggle.textContent = "Light Mode";
     } else {
         darkModeToggle.textContent = "Dark Mode";
     }
 }
 
-// Event listener za toggle
-darkModeToggle.addEventListener("click", function() {
+darkModeToggle.addEventListener("click", function () {
     document.body.classList.toggle("dark-mode");
 
-    // Spremanje preferencije
-    if(document.body.classList.contains("dark-mode")){
+    if (document.body.classList.contains("dark-mode")) {
         localStorage.setItem("darkMode", "enabled");
     } else {
         localStorage.setItem("darkMode", "disabled");
     }
 
-    // Update teksta dugmeta
     updateToggleText();
 });
 
 // Provjera pri učitavanju stranice
-if(localStorage.getItem("darkMode") === "enabled"){
+if (localStorage.getItem("darkMode") === "enabled") {
     document.body.classList.add("dark-mode");
 }
 
-// Postavi početni tekst dugmeta
+// Početni tekst dugmeta
 updateToggleText();
-
-
-const searchInput = document.getElementById("searchInput");
-
-searchInput.addEventListener("input", function() {
-    const query = this.value.toLowerCase();
-    
-    // Filtriraj dictionary
-    const filtered = dictionary.filter(item => 
-        item.word.toLowerCase().includes(query) || 
-        item.translation.toLowerCase().includes(query)
-    );
-
-    renderList(filtered);
-});
