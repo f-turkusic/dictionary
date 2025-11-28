@@ -99,19 +99,43 @@ if (localStorage.getItem("darkMode") === "enabled") {
 }
 updateDarkModeButton();
 
-// ===================== PASTE FROM CLIPBOARD =====================
-document.getElementById("pasteBtn").addEventListener("click", async () => {
-    try {
-        const text = await navigator.clipboard.readText();
-        let [word, translation] = text.includes("—") ? text.split("—") : text.split(":");
+// ===================== PASTE FROM CLIPBOARD (inline icons) =====================
+document.querySelectorAll('.paste-icon').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const targetId = btn.dataset.target;
+        const targetEl = document.getElementById(targetId);
+        if (!targetEl) return;
 
-        document.getElementById("wordInput").value = (word || "").trim();
-        document.getElementById("translationInput").value = (translation || "").trim();
+        try {
+            const text = await navigator.clipboard.readText();
+            // If clipboard contains a `—` or `:` split into two halves and prefer the first half
+            if (text.includes('—') || text.includes(':')) {
+                // guess: if user wants the word field, prefer the left side; for translation field, prefer the right side
+                const parts = text.includes('—') ? text.split('—') : text.split(':');
+                if (targetId === 'wordInput') {
+                    targetEl.value = (parts[0] || '').trim();
+                } else {
+                    // translation input
+                    targetEl.value = (parts[1] || parts[0] || '').trim();
+                }
+            } else {
+                targetEl.value = text.trim();
+            }
 
-    } catch (err) {
-        alert("Ne mogu dohvatiti clipboard.");
-        console.error(err);
-    }
+            const previousHTML = btn.innerHTML;
+            // small inline checkmark SVG for feedback
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+            setTimeout(() => btn.innerHTML = previousHTML, 900);
+
+        } catch (err) {
+            console.error('Clipboard read failed', err);
+            const previousHTML = btn.innerHTML;
+            // small error mark
+            btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 9v4" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17h.01" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#b91c1c" stroke-width="1.2"/></svg>';
+            setTimeout(() => btn.innerHTML = previousHTML, 900);
+            alert('Ne mogu dohvatiti clipboard.');
+        }
+    });
 });
 
 // ===================== GOOGLE TRANSLATE (simple) =====================
