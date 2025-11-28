@@ -147,3 +147,38 @@ translateBtn.addEventListener("click", () => {
         }
     }
 })();
+
+function saveWordToDictionary(word, translation) {
+    // sanitize
+    word = (word || "").toString().trim();
+    translation = (translation || "").toString().trim();
+    if (!word) return;
+
+    // ensure we update the global in-memory dictionary and persist
+    if (!window.dictionary) window.dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
+
+    // avoid exact duplicate entries
+    const exists = dictionary.some(item => item.word === word && item.translation === translation);
+    if (exists) {
+        console.log('saveWordToDictionary: already exists', word, translation);
+        return;
+    }
+
+    dictionary.push({ word, translation });
+    localStorage.setItem("dictionary", JSON.stringify(dictionary));
+    // update UI immediately
+    if (typeof renderList === 'function') renderList();
+}
+
+window.addEventListener("message", function(event) {
+    if (event.data.type === "ADD_WORD") {
+        const word = event.data.word;
+        
+        const translation = prompt(`Enter translation for: "${word}"`);
+        if (!translation) return;
+
+        saveWordToDictionary(word, translation);
+
+        alert(`Saved:\n${word} → ${translation}`);
+    }
+});
