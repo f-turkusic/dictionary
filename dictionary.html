@@ -35,18 +35,53 @@
 
     <!-- The form controls were already present — keep them inside the body. -->
     <div class="controls">
-        <input id="wordInput" placeholder="Unesi riječ" />
-        <input id="translationInput" placeholder="Unesi prijevod" />
-        <button id="saveBtn">Spremi riječ</button>
+        <input id="wordInput" type="text" placeholder="Unesi riječ" />
+        <input id="translationInput" type="text" placeholder="Unesi prijevod" />
+        <button id="saveBtn" type="button">Spremi riječ</button>
     </div>
+
+    <!-- list container the script expects -->
+    <h3>Spremljene riječi:</h3>
+    <div id="wordList"></div>
 </body>
 <script>
+    function renderList() {
+        const listDiv = document.getElementById("wordList");
+        if (!listDiv) return; // defensive: nothing to render into
+        listDiv.innerHTML = ""; // očisti prethodni prikaz
+
+        (Array.isArray(dictionary) ? dictionary : []).forEach(item => {
+            const row = document.createElement("div");
+            row.textContent = `${item.word} — ${item.translation}`;
+            listDiv.appendChild(row);
+        });
+    }
+
+
     // 1. Nađi dugme po ID-u
     const saveBtn = document.getElementById("saveBtn");
+    // load existing dictionary, ensure it's an array and normalise legacy items
     let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
+    if (!Array.isArray(dictionary)) dictionary = [];
+    let _ts = Date.now();
+    let _changed = false;
+    dictionary = dictionary.map(it => {
+        if (!it || typeof it !== 'object') return it;
+        if (!('id' in it) || it.id == null) {
+            it.id = (_ts++).toString(36) + Math.floor(Math.random()*9000 + 1000).toString(36);
+            _changed = true;
+        }
+        return it;
+    });
+    if (_changed) localStorage.setItem('dictionary', JSON.stringify(dictionary));
+
+    // ensure list render regardless of listener timing
+    try { renderList(); } catch (e) { /* ignore render errors */ }
+    document.addEventListener("DOMContentLoaded", function () { renderList(); });
 
     // 2. Dodaj funkciju koja se izvršava kad se klikne na dugme
-    saveBtn.addEventListener("click", function () {
+    if (saveBtn) {
+        saveBtn.addEventListener("click", function () {
 
         // 3. Uzimamo vrijednosti iz input polja
         const word = document.getElementById("wordInput").value;
@@ -58,8 +93,8 @@
             return;
         }
 
-        // Dodaj novu riječ u array
-        dictionary.push({ word, translation });
+        // Dodaj novu riječ u array (zajedno s id-jem)
+        dictionary.push({ id: (Date.now()).toString(36) + Math.floor(Math.random()*9000 + 1000).toString(36), word, translation });
 
         // Spremi u localStorage
         localStorage.setItem("dictionary", JSON.stringify(dictionary));
@@ -70,14 +105,15 @@
 
         // Poruka da je uspješno spremljeno
         alert("Riječ spremljena!");
-
+        renderList();
 
         // 4. Ispis u konzolu (da testiramo da sve radi)
         console.log("Unesena riječ:", word);
         console.log("Prijevod:", translation);
 
         // alert("Klik radi! Provjeri konzolu.");
-    });
+        });
+    }
 </script>
 
 </html>
