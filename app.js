@@ -8,14 +8,6 @@ function renderList(list = dictionary) {
 
     list.forEach(item => {
         const row = document.createElement("div");
-        row.style.display = "flex";
-        row.style.justifyContent = "space-between";
-        row.style.alignItems = "center";
-        row.style.marginBottom = "5px";
-        row.style.padding = "10px 15px";
-        row.style.background = "white";
-        row.style.borderRadius = "8px";
-        row.style.boxShadow = "0 2px 5px rgba(0,0,0,0.1)";
 
         const text = document.createElement("span");
         text.textContent = `${item.word} — ${item.translation}`;
@@ -23,9 +15,6 @@ function renderList(list = dictionary) {
         // EDIT dugme
         const editBtn = document.createElement("button");
         editBtn.textContent = "✎";
-        editBtn.style.marginRight = "10px";
-        editBtn.style.cursor = "pointer";
-
         editBtn.addEventListener("click", function () {
             const newWord = prompt("Uredi riječ:", item.word);
             const newTranslation = prompt("Uredi prijevod:", item.translation);
@@ -41,9 +30,6 @@ function renderList(list = dictionary) {
         // DELETE dugme
         const deleteBtn = document.createElement("button");
         deleteBtn.textContent = "X";
-        deleteBtn.style.color = "red";
-        deleteBtn.style.cursor = "pointer";
-
         deleteBtn.addEventListener("click", function () {
             const index = dictionary.indexOf(item);
             dictionary.splice(index, 1);
@@ -96,31 +82,48 @@ searchInput.addEventListener("input", function () {
 // ====== DARK / LIGHT MODE ======
 const darkModeToggle = document.getElementById("darkModeToggle");
 
-// Update teksta dugmeta
 function updateToggleText() {
-    if (document.body.classList.contains("dark-mode")) {
-        darkModeToggle.textContent = "Light Mode";
-    } else {
-        darkModeToggle.textContent = "Dark Mode";
-    }
+    darkModeToggle.textContent = document.body.classList.contains("dark-mode") ? "Light Mode" : "Dark Mode";
 }
 
 darkModeToggle.addEventListener("click", function () {
     document.body.classList.toggle("dark-mode");
-
-    if (document.body.classList.contains("dark-mode")) {
-        localStorage.setItem("darkMode", "enabled");
-    } else {
-        localStorage.setItem("darkMode", "disabled");
-    }
-
+    localStorage.setItem("darkMode", document.body.classList.contains("dark-mode") ? "enabled" : "disabled");
     updateToggleText();
 });
 
-// Provjera pri učitavanju stranice
 if (localStorage.getItem("darkMode") === "enabled") {
     document.body.classList.add("dark-mode");
 }
 
-// Početni tekst dugmeta
 updateToggleText();
+
+// ====== PASTE FROM CLIPBOARD ======
+const pasteBtn = document.getElementById("pasteBtn");
+pasteBtn.addEventListener("click", async () => {
+    try {
+        const text = await navigator.clipboard.readText();
+        let [word, translation] = text.includes("—") ? text.split("—") : text.split(":");
+        word = word ? word.trim() : "";
+        translation = translation ? translation.trim() : "";
+
+        if(word) document.getElementById("wordInput").value = word;
+        if(translation) document.getElementById("translationInput").value = translation;
+
+    } catch(err) {
+        alert("Ne mogu dohvatiti clipboard. Provjeri dozvole.");
+        console.error(err);
+    }
+});
+
+// ====== OPEN GOOGLE TRANSLATE ======
+const translateBtn = document.getElementById("translateBtn");
+translateBtn.addEventListener("click", () => {
+    const word = document.getElementById("wordInput").value.trim();
+    if(!word) {
+        alert("Unesi riječ koju želiš prevesti.");
+        return;
+    }
+    const url = `https://translate.google.com/?sl=auto&tl=bs&text=${encodeURIComponent(word)}&op=translate`;
+    window.open(url, "_blank");
+});

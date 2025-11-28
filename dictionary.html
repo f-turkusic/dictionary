@@ -1,32 +1,33 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Moj Rječnik</title>
     <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
 
-    <h1>Moj rječnik</h1>
-    <button id="darkModeToggle">Dark Mode</button>
-    <!-- Forma za dodavanje riječi -->
-    <form id="addWordForm">
-        <input id="wordInput" type="text" placeholder="Njemačka riječ" required>
-        <input id="translationInput" type="text" placeholder="Prijevod" required>
-        <button type="submit">Dodaj riječ</button>
-    </form>
+<h1>Moj Rječnik</h1>
+<button id="darkModeToggle">Dark Mode</button>
 
-    <input id="searchInput" type="text" placeholder="Pretraži riječi..." />
-    
-    <!-- Lista spremljenih riječi -->
-    <h3>Spremljene riječi:</h3>
-    <div id="wordList"></div>
+<!-- Forma za dodavanje riječi -->
+<form id="addWordForm">
+    <input id="wordInput" type="text" placeholder="Njemačka riječ" required>
+    <input id="translationInput" type="text" placeholder="Prijevod" required>
+    <button type="submit">Dodaj riječ</button>
+</form>
 
-    <!-- JavaScript -->
-    <script src="app.js"></script>
+<!-- Dugmad za interakciju sa Google Translate -->
+<button type="button" id="pasteBtn">Paste from Clipboard</button>
+<button type="button" id="translateBtn">Translate</button>
 
+<!-- Input za pretragu -->
+<input id="searchInput" type="text" placeholder="Pretraži riječi..." />
+
+<!-- Lista riječi -->
+<h3>Spremljene riječi:</h3>
+<div id="wordList"></div>
+
+<script src="app.js"></script>
 </body>
-
 </html>
