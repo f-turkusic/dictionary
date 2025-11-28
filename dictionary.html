@@ -1,3 +1,26 @@
-<input id="wordInput" placeholder="Unesi riječ" />
-<input id="translationInput" placeholder="Unesi prijevod" />
-<button id="saveBtn">Spremi riječ</button>
+<!doctype html>
+<html lang="hr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width,initial-scale=1" />
+		<title>Rječnik — dictionary.html</title>
+		<style>
+			/* small layout helpers */
+			body { font-family: system-ui,Segoe UI,Roboto,Arial,sans-serif; padding: 24px; }
+			.controls { display:flex; gap:8px; align-items:center; }
+			input { padding:8px; font-size:14px; }
+			button { padding:8px 12px; }
+		</style>
+	</head>
+	<body>
+		<!-- Main page heading: use <h1> for the top-level heading. -->
+		<h1><u>Rječnik</u></h1>
+
+		<!-- The form controls were already present — keep them inside the body. -->
+		<div class="controls">
+			<input id="wordInput" placeholder="Unesi riječ" />
+			<input id="translationInput" placeholder="Unesi prijevod" />
+			<button id="saveBtn">Spremi riječ</button>
+		</div>
+	</body>
+</html>
