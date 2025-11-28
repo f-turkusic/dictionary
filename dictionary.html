@@ -1,119 +1,65 @@
-<!doctype html>
-<html lang="hr">
+<!DOCTYPE html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Rječnik — dictionary.html</title>
+    <meta charset="UTF-8">
+    <title>Moj Rječnik</title>
     <style>
-        /* small layout helpers */
         body {
-            font-family: system-ui, Segoe UI, Roboto, Arial, sans-serif;
-            padding: 24px;
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 10px;
         }
 
-        .controls {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        input {
+        input,
+        button {
             padding: 8px;
-            font-size: 14px;
+            margin: 5px 0;
+            width: 100%;
+            box-sizing: border-box;
         }
 
         button {
-            padding: 8px 12px;
+            cursor: pointer;
+        }
+
+        #wordList div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #wordList button {
+            color: red;
+            border: none;
+            background: none;
+            font-weight: bold;
         }
     </style>
 </head>
 
 <body>
-    <!-- Main page heading: use <h1> for the top-level heading. -->
-    <h1><u>Rječnik</u></h1>
 
-    <!-- The form controls were already present — keep them inside the body. -->
-    <div class="controls">
-        <input id="wordInput" type="text" placeholder="Unesi riječ" />
-        <input id="translationInput" type="text" placeholder="Unesi prijevod" />
-        <button id="saveBtn" type="button">Spremi riječ</button>
-    </div>
+    <h1>Moj rječnik</h1>
 
-    <!-- list container the script expects -->
+    <!-- Forma za dodavanje riječi -->
+    <form id="addWordForm">
+        <input id="wordInput" type="text" placeholder="Njemačka riječ" required>
+        <input id="translationInput" type="text" placeholder="Prijevod" required>
+        <button type="submit">Dodaj riječ</button>
+    </form>
+
+    <!-- Lista spremljenih riječi -->
     <h3>Spremljene riječi:</h3>
     <div id="wordList"></div>
+
+    <!-- JavaScript -->
+    <script src="app.js"></script>
+
 </body>
-<script>
-    function renderList() {
-        const listDiv = document.getElementById("wordList");
-        if (!listDiv) return; // defensive: nothing to render into
-        listDiv.innerHTML = ""; // očisti prethodni prikaz
-
-        (Array.isArray(dictionary) ? dictionary : []).forEach(item => {
-            const row = document.createElement("div");
-            row.textContent = `${item.word} — ${item.translation}`;
-            listDiv.appendChild(row);
-        });
-    }
-
-
-    // 1. Nađi dugme po ID-u
-    const saveBtn = document.getElementById("saveBtn");
-    // load existing dictionary, ensure it's an array and normalise legacy items
-    let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
-    if (!Array.isArray(dictionary)) dictionary = [];
-    let _ts = Date.now();
-    let _changed = false;
-    dictionary = dictionary.map(it => {
-        if (!it || typeof it !== 'object') return it;
-        if (!('id' in it) || it.id == null) {
-            it.id = (_ts++).toString(36) + Math.floor(Math.random()*9000 + 1000).toString(36);
-            _changed = true;
-        }
-        return it;
-    });
-    if (_changed) localStorage.setItem('dictionary', JSON.stringify(dictionary));
-
-    // ensure list render regardless of listener timing
-    try { renderList(); } catch (e) { /* ignore render errors */ }
-    document.addEventListener("DOMContentLoaded", function () { renderList(); });
-
-    // 2. Dodaj funkciju koja se izvršava kad se klikne na dugme
-    if (saveBtn) {
-        saveBtn.addEventListener("click", function () {
-
-        // 3. Uzimamo vrijednosti iz input polja
-        const word = document.getElementById("wordInput").value;
-        const translation = document.getElementById("translationInput").value;
-
-        // Provjeri da li su input polja popunjena
-        if (!word || !translation) {
-            alert("Unesi i riječ i prijevod.");
-            return;
-        }
-
-        // Dodaj novu riječ u array (zajedno s id-jem)
-        dictionary.push({ id: (Date.now()).toString(36) + Math.floor(Math.random()*9000 + 1000).toString(36), word, translation });
-
-        // Spremi u localStorage
-        localStorage.setItem("dictionary", JSON.stringify(dictionary));
-
-        // Obriši input polja
-        document.getElementById("wordInput").value = "";
-        document.getElementById("translationInput").value = "";
-
-        // Poruka da je uspješno spremljeno
-        alert("Riječ spremljena!");
-        renderList();
-
-        // 4. Ispis u konzolu (da testiramo da sve radi)
-        console.log("Unesena riječ:", word);
-        console.log("Prijevod:", translation);
-
-        // alert("Klik radi! Provjeri konzolu.");
-        });
-    }
-</script>
 
 </html>
