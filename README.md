@@ -36,3 +36,5 @@ app.get('*', (req,res) => { res.sendFile(path.join(__dirname, 'public','index.ht
 ```
 
 If you need help diagnosing the response headers you get from your server, paste the headers here and I can help interpret them.
+
+<!-- Previously an inline translate UI section was here, but the project was reverted to a simpler translate button beside the word input. -->

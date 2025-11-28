@@ -12,14 +12,20 @@
 
 <!-- Forma za dodavanje riječi -->
 <form id="addWordForm">
-    <input id="wordInput" type="text" placeholder="Njemačka riječ" required>
-    <input id="translationInput" type="text" placeholder="Prijevod" required>
-    <button type="submit">Dodaj riječ</button>
+    <div class="row inputs">
+        <input id="wordInput" type="text" placeholder="Njemačka riječ" required>
+        <button type="button" id="translateBtn">Translate</button>
+    </div>
+
+    <div class="row inputs">
+        <input id="translationInput" type="text" placeholder="Prijevod" required>
+        <button type="submit">Dodaj riječ</button>
+    </div>
 </form>
 
 <!-- Dugmad za interakciju sa Google Translate -->
 <button type="button" id="pasteBtn">Paste from Clipboard</button>
-<button type="button" id="translateBtn">Translate</button>
+
 
 <!-- Input za pretragu -->
 <input id="searchInput" type="text" placeholder="Pretraži riječi..." />
