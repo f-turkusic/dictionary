@@ -67,7 +67,7 @@ input:focus {
     border-color: #4CAF50;
 }
 
-button[type="submit"], #translateBtn, #darkModeToggle {
+button[type="submit"], #translateBtn, #darkModeToggle, #importBtn, #cancelEditBtn , #exportCsvBtn,  #exportJsonBtn  , #importFile {
     padding: 10px;
     font-size: 14-16px;
     border-radius: 5px;

@@ -9,7 +9,14 @@
 
 <h1>Moj Rječnik</h1>
 <button id="darkModeToggle">Dark Mode</button>
+<button id="exportCsvBtn">Export CSV</button>
+<button id="exportJsonBtn">Export JSON</button>
 
+<!-- Import controls -->
+<button id="importBtn" type="button">Import…</button>
+<input id="importFile" type="file" accept=".json,.csv" style="display:none" />
+<div id="importStatus" aria-live="polite" style="display:inline-block; margin-left:8px;"></div>
+<div id="toastContainer" aria-live="polite"></div>
 <!-- Forma za dodavanje riječi -->
 <form id="addWordForm">
     <div class="row inputs">

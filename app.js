@@ -170,6 +170,170 @@ document.querySelectorAll('.paste-icon').forEach(btn => {
     });
 });
 
+// ===================== EXPORT / IMPORT =====================
+function downloadBlob(filename, content, type = 'application/octet-stream') {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+}
+
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+    try {
+        const json = JSON.stringify(dictionary, null, 2);
+        downloadBlob('dictionary.json', json, 'application/json;charset=utf-8');
+        const s = document.getElementById('importStatus');
+        if (s) s.textContent = 'Exported JSON.';
+    } catch (err) {
+        console.error(err);
+        alert('Export JSON failed.');
+    }
+});
+
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    try {
+        // build CSV with header and quoted fields
+        const rows = ['"word","translation"'];
+        dictionary.forEach(item => {
+            const w = String(item.word).replace(/"/g, '""');
+            const t = String(item.translation).replace(/"/g, '""');
+            rows.push(`"${w}","${t}"`);
+        });
+        // add BOM so Excel on Windows opens with utf-8
+        const csv = '\uFEFF' + rows.join('\n');
+        downloadBlob('dictionary.csv', csv, 'text/csv;charset=utf-8');
+        const s = document.getElementById('importStatus');
+        if (s) s.textContent = 'Exported CSV.';
+    } catch (err) {
+        console.error(err);
+        alert('Export CSV failed.');
+    }
+});
+
+// Import button clicks the hidden file input
+const importBtn = document.getElementById('importBtn');
+const importFile = document.getElementById('importFile');
+if (importBtn && importFile) {
+    importBtn.addEventListener('click', () => importFile.click());
+}
+
+function parseCSV(text) {
+    // basic CSV parser supporting quoted fields and escaped "" inside quotes
+    const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+    if (!lines.length) return [];
+
+    function parseLine(line) {
+        const cols = [];
+        let cur = '';
+        let inQuotes = false;
+        for (let i = 0; i < line.length; i++) {
+            const ch = line[i];
+            if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
+                    cur += '"';
+                    i++; // skip escaped quote
+                } else {
+                    inQuotes = !inQuotes;
+                }
+            } else if (ch === ',' && !inQuotes) {
+                cols.push(cur);
+                cur = '';
+            } else {
+                cur += ch;
+            }
+        }
+        cols.push(cur);
+        return cols.map(c => c.trim());
+    }
+
+    const header = parseLine(lines[0]);
+    let start = 0;
+    let colWord = 0;
+    let colTranslation = 1;
+
+    const lowerHeader = header.map(h => h.toLowerCase());
+    if (lowerHeader.includes('word') || lowerHeader.includes('translation') || lowerHeader.includes('translation')) {
+        // header row exists
+        start = 1;
+        colWord = lowerHeader.findIndex(h => h.includes('word'));
+        colTranslation = lowerHeader.findIndex(h => h.includes('translation'));
+        if (colWord === -1) colWord = 0;
+        if (colTranslation === -1) colTranslation = (colWord === 0 ? 1 : 0);
+    }
+
+    const result = [];
+    for (let i = start; i < lines.length; i++) {
+        const cols = parseLine(lines[i]);
+        const word = (cols[colWord] || '').trim();
+        const translation = (cols[colTranslation] || '').trim();
+        if (word) result.push({ word, translation });
+    }
+    return result;
+}
+
+importFile.addEventListener('change', async function () {
+    const statusEl = document.getElementById('importStatus');
+    if (!this.files || !this.files.length) return;
+    const file = this.files[0];
+    const text = await file.text();
+
+    let parsed = [];
+    try {
+        if (file.name.toLowerCase().endsWith('.json')) {
+            const data = JSON.parse(text);
+            if (!Array.isArray(data)) throw new Error('JSON must be an array');
+            parsed = data.map(d => ({ word: String(d.word || '').trim(), translation: String(d.translation || '').trim() }));
+        } else if (file.name.toLowerCase().endsWith('.csv')) {
+            parsed = parseCSV(text);
+        } else {
+            // try JSON first, then CSV
+            try {
+                const data = JSON.parse(text);
+                if (Array.isArray(data)) {
+                    parsed = data.map(d => ({ word: String(d.word || '').trim(), translation: String(d.translation || '').trim() }));
+                }
+            } catch (e) {
+                parsed = parseCSV(text);
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        if (statusEl) statusEl.textContent = 'Invalid import file (parse error).';
+        this.value = '';
+        return;
+    }
+
+    // validate
+    parsed = parsed.filter(p => p && p.word && typeof p.word === 'string');
+    if (!parsed.length) {
+        if (statusEl) statusEl.textContent = 'No valid rows found in file.';
+        this.value = '';
+        return;
+    }
+
+    // merge: add items that are not present (match exact word+translation)
+    let added = 0;
+    parsed.forEach(it => {
+        const exists = dictionary.some(d => d.word === it.word && d.translation === it.translation);
+        if (!exists) {
+            dictionary.push(it);
+            added++;
+        }
+    });
+
+    saveDictionary();
+    renderList();
+
+    if (statusEl) statusEl.textContent = added ? `Imported ${added} new item(s).` : 'No new items imported.';
+    // reset file input
+    this.value = '';
+});
+
 // ===================== GOOGLE TRANSLATE (simple) =====================
 document.getElementById("translateBtn").addEventListener("click", () => {
     const word = document.getElementById("wordInput").value.trim();
