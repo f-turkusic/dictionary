@@ -58,7 +58,31 @@ function editItem(item) {
 }
 
 function deleteItem(item) {
+    // keep a reference to the removed item if needed (avoid leaving stray text)
+    const removedItem = item;
+    // tempDeleted[id] = { item, index, timeoutId }
     dictionary = dictionary.filter(i => i !== item);
+    // Show toast notification
+    const toast = document.createElement('div');
+    toast.className = 'toast';
+    toast.textContent = `Deleted: ${removedItem.word } — ${removedItem.translation}`;
+    document.body.appendChild(toast);
+    
+    // Undo functionality
+    const undoBtn = document.createElement('button');
+    undoBtn.className = 'toast-undo-btn';
+    undoBtn.textContent = 'Undo';
+
+    undoBtn.onclick = () => {
+        dictionary.push(removedItem);
+        saveDictionary();
+        renderList();
+        toast.remove();
+    };
+    toast.appendChild(undoBtn);
+    
+    setTimeout(() => toast.remove(), 4000);
+
     saveDictionary();
     renderList();
 }
