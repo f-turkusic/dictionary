@@ -88,7 +88,6 @@ function deleteItem(item) {
     const undoBtn = document.createElement('button');
     undoBtn.className = 'toast-undo-btn';
     undoBtn.textContent = 'Undo';
-
     undoBtn.onclick = () => {
 
         // Step 2: Undo removal
@@ -106,7 +105,7 @@ function deleteItem(item) {
 
     toast.appendChild(undoBtn);
 
-    setTimeout(() => toast.remove(), 4000);
+    // setTimeout(() => toast.remove(), 4000);
 
     saveDictionary();
     renderList();

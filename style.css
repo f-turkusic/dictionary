@@ -76,6 +76,11 @@ button[type="submit"], #translateBtn, #darkModeToggle, #importBtn, #cancelEditBt
     margin-bottom: 5px;
 }
 
+.toast-undo-btn {
+    margin-left: auto;        /* pushes it to the right if container is flex */
+    float: right;             /* works if container is block */
+}
+
 /* cancel edit button */
 #cancelEditBtn {
     padding: 8px 10px;
