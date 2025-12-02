@@ -11,6 +11,9 @@ function renderList(list = dictionary) {
     const listDiv = document.getElementById("wordList");
     listDiv.innerHTML = "";
 
+    console.log('Rendering list with', list.length, 'items');
+    console.log(list);
+    
     list.forEach(item => {
         const row = document.createElement("div");
         row.className = 'word-row';
@@ -18,7 +21,7 @@ function renderList(list = dictionary) {
         // text area (allow wrapping but keep it from pushing controls out)
         const text = document.createElement("span");
         text.className = 'item-text';
-        text.textContent = `${item.word} — ${item.translation}`;
+        if(item)text.textContent = `${item.word} — ${item.translation}`;
 
         // actions container to ensure icons are always aligned right
         const actions = document.createElement('div');
@@ -48,8 +51,8 @@ function editItem(item) {
     if (idx === -1) return;
 
     editingIndex = idx;
-    document.getElementById('wordInput').value = item.word;
-    document.getElementById('translationInput').value = item.translation;
+    document.getElementById('wordInput').value = (item && item.word !== null) ? item.word : ''; 
+    document.getElementById('translationInput').value = (item && item.translation !== null) ? item.translation : '';
     document.getElementById('wordInput').focus();
 
     // change submit button text and show cancel button
@@ -60,27 +63,49 @@ function editItem(item) {
 function deleteItem(item) {
     // keep a reference to the removed item if needed (avoid leaving stray text)
     const removedItem = item;
-    // tempDeleted[id] = { item, index, timeoutId }
+
+    let tempDeleted = [];
+
+    // tempDeleted.push(removedItem);
+
+    let indexToRemove = dictionary.indexOf(item);
+
+
+    if (indexToRemove !== -1) {
+        let removedItem = dictionary.splice(indexToRemove, 1)[0];
+        tempDeleted.push(removedItem);
+    }
+
+
     dictionary = dictionary.filter(i => i !== item);
     // Show toast notification
     const toast = document.createElement('div');
     toast.className = 'toast';
-    toast.textContent = `Deleted: ${removedItem.word } — ${removedItem.translation}`;
+    toast.textContent = `Deleted: ${removedItem.word} — ${removedItem.translation}`;
     document.body.appendChild(toast);
-    
+
     // Undo functionality
     const undoBtn = document.createElement('button');
     undoBtn.className = 'toast-undo-btn';
     undoBtn.textContent = 'Undo';
 
     undoBtn.onclick = () => {
-        dictionary.push(removedItem);
+
+        // Step 2: Undo removal
+        if (tempDeleted.length > 0) {
+            let lastDeleted = tempDeleted.pop(); // get last removed item
+            dictionary.splice(indexToRemove, 0, lastDeleted); // insert back at same position
+        }
+
+
+        // dictionary.push(removedItem);
         saveDictionary();
         renderList();
         toast.remove();
     };
+
     toast.appendChild(undoBtn);
-    
+
     setTimeout(() => toast.remove(), 4000);
 
     saveDictionary();
@@ -368,7 +393,7 @@ document.getElementById("translateBtn").addEventListener("click", () => {
 });
 
 // ===================== URL ?word=xxx =====================
-(function() {
+(function () {
     const word = new URLSearchParams(window.location.search).get("word");
     if (!word) return;
 
