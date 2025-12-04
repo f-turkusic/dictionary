@@ -39,11 +39,21 @@ input {
 }
 
 /* compact row inputs: make the first input expand while the button stays fixed */
-.row.inputs input { flex: 1; }
+.row.inputs input {
+    flex: 1;
+}
 
 /* consistent heights so inputs and buttons appear aligned */
-.row.inputs input, .input-with-icon input { min-height: 44px; height: 44px; }
-button[type="submit"], #translateBtn { min-height: 44px; }
+.row.inputs input,
+.input-with-icon input {
+    min-height: 44px;
+    height: 44px;
+}
+
+button[type="submit"],
+#translateBtn {
+    min-height: 44px;
+}
 
 /* Keep translate button visually consistent with other action buttons */
 #translateBtn {
@@ -55,11 +65,19 @@ button[type="submit"], #translateBtn { min-height: 44px; }
     color: #fff;
 }
 
-#translateBtn:hover { background-color: #333; }
+#translateBtn:hover {
+    background-color: #333;
+}
 
 @media (max-width: 720px) {
-    .row.inputs { flex-direction: column; align-items: stretch; }
-    .row.inputs input { width: 100%; }
+    .row.inputs {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .row.inputs input {
+        width: 100%;
+    }
 }
 
 input:focus {
@@ -67,7 +85,16 @@ input:focus {
     border-color: #4CAF50;
 }
 
-button[type="submit"], #translateBtn, #darkModeToggle, #importBtn, #cancelEditBtn , #exportCsvBtn,  #exportJsonBtn  , #importFile , .toast-undo-btn{
+button[type="submit"],
+#translateBtn,
+#darkModeToggle,
+#importBtn,
+#cancelEditBtn,
+#exportCsvBtn,
+#exportJsonBtn,
+#importFile,
+.toast-undo-btn,
+#filterFavoritesBtn {
     padding: 10px;
     font-size: 14-16px;
     border-radius: 5px;
@@ -77,24 +104,31 @@ button[type="submit"], #translateBtn, #darkModeToggle, #importBtn, #cancelEditBt
 }
 
 .toast-undo-btn {
-    margin-left: auto;        /* pushes it to the right if container is flex */
-    float: right;             /* works if container is block */
+    margin-left: auto;
+    /* pushes it to the right if container is flex */
+    float: right;
+    /* works if container is block */
 }
 
 /* cancel edit button */
 #cancelEditBtn {
     padding: 8px 10px;
     border-radius: 6px;
-    background: #ef4444; /* red-ish for cancel */
+    background: #ef4444;
+    /* red-ish for cancel */
     color: white;
     border: none;
     cursor: pointer;
 }
 
-#cancelEditBtn:hover { background: #dc2626; }
+#cancelEditBtn:hover {
+    background: #dc2626;
+}
 
 @media (max-width: 720px) {
-    #cancelEditBtn { margin-left: 0; }
+    #cancelEditBtn {
+        margin-left: 0;
+    }
 }
 
 button[type="submit"] {
@@ -114,8 +148,18 @@ button[type="submit"]:hover {
 }
 
 /* input-with-icon */
-.input-with-icon { position: relative; flex: 1 1 auto; min-width: 0; }
-.input-with-icon input { width: 100%; padding-right: 46px; min-width: 0; }
+.input-with-icon {
+    position: relative;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.input-with-icon input {
+    width: 100%;
+    padding-right: 46px;
+    min-width: 0;
+}
+
 .paste-icon {
     position: absolute;
     right: 8px;
@@ -128,27 +172,57 @@ button[type="submit"]:hover {
     width: 30px;
     border-radius: 6px;
     border: 1px solid transparent;
-    background: #f3f4f6; /* subtle neutral */
+    background: #f3f4f6;
+    /* subtle neutral */
     cursor: pointer;
-    color: #374151; /* ink */
+    color: #374151;
+    /* ink */
     padding: 0;
 }
-.paste-icon:hover { background: #e9eef8; border-color: #dbeafe; }
-.paste-icon:active { background: #e1e7f6; transform: translateY(-50%) scale(0.98); }
+
+.paste-icon:hover {
+    background: #e9eef8;
+    border-color: #dbeafe;
+}
+
+.paste-icon:active {
+    background: #e1e7f6;
+    transform: translateY(-50%) scale(0.98);
+}
 
 @media (max-width: 720px) {
-    .input-with-icon input { padding-right: 12px; }
-    .paste-icon { position: static; transform: none; margin-left: 6px; height: auto; width: auto; border-radius: 4px; padding: 6px; }
+    .input-with-icon input {
+        padding-right: 12px;
+    }
+
+    .paste-icon {
+        position: static;
+        transform: none;
+        margin-left: 6px;
+        height: auto;
+        width: auto;
+        border-radius: 4px;
+        padding: 6px;
+    }
 }
 
 /* Make sure translate button stays on top if things are tight */
-#translateBtn { z-index: 3; }
+#translateBtn {
+    z-index: 3;
+}
 
 /* dark mode: more subtle icon background */
-body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: rgba(255,255,255,0.04); color: #e0e0e0; }
+body.dark-mode .paste-icon {
+    background: rgba(255, 255, 255, 0.04);
+    border-color: rgba(255, 255, 255, 0.04);
+    color: #e0e0e0;
+}
 
 /* ensure translate button doesn't shrink below a useful width */
-#translateBtn { flex: 0 0 auto; min-width: 92px; }
+#translateBtn {
+    flex: 0 0 auto;
+    min-width: 92px;
+}
 
 #darkModeToggle {
     background-color: #777;
@@ -170,7 +244,7 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
     border-radius: 8px;
     padding: 10px 15px;
     margin-bottom: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s, background 0.3s;
 }
 
@@ -179,7 +253,13 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
 }
 
 /* row actions */
-#wordList .item-actions { display: flex; gap: 12px; align-items: center; justify-content: flex-end; min-width: 96px; }
+#wordList .item-actions {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    justify-content: flex-end;
+    min-width: 96px;
+}
 
 #wordList button {
     cursor: pointer;
@@ -192,11 +272,26 @@ body.dark-mode .paste-icon { background: rgba(255,255,255,0.04); border-color: r
 }
 
 /* ensure long text doesn't push icons out; allow wrapping but set min-width 0 on text */
-.item-text { flex: 1 1 auto; min-width: 0; padding-right: 8px; }
+.item-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    padding-right: 8px;
+}
 
-.item-actions button { padding: 8px 10px; border-radius: 6px; background: transparent; color: #e11d48; }
-.item-actions .edit-btn { color: #ff6b6b; }
-.item-actions .delete-btn { color: #ff4d4f; }
+.item-actions button {
+    padding: 8px 10px;
+    border-radius: 6px;
+    background: transparent;
+    color: #e11d48;
+}
+
+.item-actions .edit-btn {
+    color: #ff6b6b;
+}
+
+.item-actions .delete-btn {
+    color: #ff4d4f;
+}
 
 /* Dark mode */
 body.dark-mode {
@@ -220,7 +315,7 @@ body.dark-mode button[type="submit"]:hover {
 
 body.dark-mode #wordList div {
     background: #1e1e1e;
-    box-shadow: 0 2px 5px rgba(255,255,255,0.05);
+    box-shadow: 0 2px 5px rgba(255, 255, 255, 0.05);
 }
 
 body.dark-mode #wordList button {
