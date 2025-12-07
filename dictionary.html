@@ -51,10 +51,14 @@
                     </svg>
                 </button>
             </div>
-            <div style="display:flex; gap:8px; align-items:center;">
-                <button id="submitBtn" type="submit">Dodaj riječ</button>
-                <button id="cancelEditBtn" type="button" hidden>Otkaži</button>
-            </div>
+            <label for="categorySelect">Kategorija / Filter:</label>
+            <select id="categorySelect">
+                <!-- Options (including "All") will be generated dynamically from CATEGORIES -->
+            </select>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+            <button id="submitBtn" type="submit">Dodaj riječ</button>
+            <button id="cancelEditBtn" type="button" hidden>Otkaži</button>
         </div>
     </form>
 
@@ -64,6 +68,7 @@
     <!-- Input za pretragu -->
     <input id="searchInput" type="text" placeholder="Pretraži riječi..." />
     <button id="filterFavoritesBtn">Show Favorites Only</button>
+    <button id="filterCategoryBtn">Apply Category Filter</button>
     <!-- Lista riječi -->
     <h3>Spremljene riječi:</h3>
     <div id="wordList"></div>

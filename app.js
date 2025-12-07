@@ -12,6 +12,57 @@ const CATEGORIES = [
     "Common Phrases"
 ];
 
+/**
+ * Populate the single category <select> (id="categorySelect").
+ * When `includeAll` is true, an "All" option is added as the first entry.
+ * The `selected` argument marks the option that should be pre‑selected.
+ */
+function populateCategorySelect(selected = "", includeAll = false) {
+    const select = document.getElementById('categorySelect');
+    select.innerHTML = ""; // clear any previous options
+
+    if (includeAll) {
+        const allOpt = document.createElement('option');
+        allOpt.value = "All";
+        allOpt.textContent = "All";
+        if (selected === "All") allOpt.selected = true;
+        select.appendChild(allOpt);
+    }
+
+    CATEGORIES.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (cat === selected) opt.selected = true;
+        select.appendChild(opt);
+    });
+}
+
+/**
+ * Returns the dictionary filtered by the currently selected value of the
+ * shared `categorySelect` element. "All" means no filtering.
+ */
+function getFilteredByCategory() {
+    const chosen = document.getElementById('categorySelect').value;
+    if (chosen === "All") {
+        return dictionary;
+    }
+    return dictionary.filter(item => item.category === chosen);
+}
+
+// Apply filter when the button is pressed
+document.getElementById('filterCategoryBtn').addEventListener('click', () => {
+    renderList(getFilteredByCategory());
+});
+
+// Also filter automatically when the user changes the dropdown
+document.getElementById('categorySelect').addEventListener('change', () => {
+    renderList(getFilteredByCategory());
+});
+
+// Initial population – include the "All" option for filtering purposes
+populateCategorySelect("All", true);
+
 // ===================== DATA & LOCALSTORAGE =====================
 let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
 let editingIndex = null; // index of item being edited, or null
@@ -20,8 +71,7 @@ let editingIndex = null; // index of item being edited, or null
 let favoritesFilterActive = false;
 
 // Add event listener to the filter button
-document.getElementById('filterFavoritesBtn').addEventListener('click', () =>
-{
+document.getElementById('filterFavoritesBtn').addEventListener('click', () => {
     // Toggle filter state
     favoritesFilterActive = !favoritesFilterActive;
 
@@ -32,40 +82,38 @@ document.getElementById('filterFavoritesBtn').addEventListener('click', () =>
         : 'Show Favorites Only';
 
     // Render filtered or full list
-    if (favoritesFilterActive)
-    {
+    if (favoritesFilterActive) {
         const favorited = dictionary.filter(item => item.favorite === true);
         renderList(favorited);
-    } else
-    {
+    } else {
         renderList(dictionary);
     }
 });
 
 
-function saveDictionary()
-{
+function saveDictionary() {
     localStorage.setItem("dictionary", JSON.stringify(dictionary));
 }
 
 // ===================== RENDER LIST =====================
-function renderList(list = dictionary)
-{
+function renderList(list = dictionary) {
     const listDiv = document.getElementById("wordList");
     listDiv.innerHTML = "";
 
     console.log('Rendering list with', list.length, 'items');
     console.log(list);
 
-    list.forEach(item =>
-    {
+    list.forEach(item => {
         const row = document.createElement("div");
         row.className = 'word-row';
 
         // text area (allow wrapping but keep it from pushing controls out)
         const text = document.createElement("span");
         text.className = 'item-text';
-        if (item) text.textContent = `${item.word} — ${item.translation}`;
+        if (item) {
+            const cat = item.category ? ` (${item.category})` : '';
+            text.textContent = `${item.word} — ${item.translation}${cat}`;
+        }
 
         // actions container to ensure icons are always aligned right
         const actions = document.createElement('div');
@@ -98,8 +146,7 @@ function renderList(list = dictionary)
     });
 }
 
-function toggleFavorite(item)
-{
+function toggleFavorite(item) {
 
     // Find the item in dictionary
     const index = dictionary.indexOf(item);
@@ -113,18 +160,15 @@ function toggleFavorite(item)
 
     // Re-render the list (this will show the new star state)
     // If favorites filter is active, apply it
-    if (favoritesFilterActive)
-    {
+    if (favoritesFilterActive) {
         renderList(dictionary.filter(item => item.favorite));
-    } else
-    {
+    } else {
         renderList();
     }
 }
 
 
-function editItem(item)
-{
+function editItem(item) {
     // Put the clicked item into the form so user can edit inline
     const idx = dictionary.indexOf(item);
     if (idx === -1) return;
@@ -137,10 +181,12 @@ function editItem(item)
     // change submit button text and show cancel button
     document.getElementById('submitBtn').textContent = 'Snimi izmjenu';
     document.getElementById('cancelEditBtn').hidden = false;
+
+    // inside editItem()
+    populateCategorySelect(item.category);
 }
 
-function deleteItem(item)
-{
+function deleteItem(item) {
     // keep a reference to the removed item if needed (avoid leaving stray text)
     const removedItem = item;
 
@@ -151,8 +197,7 @@ function deleteItem(item)
     let indexToRemove = dictionary.indexOf(item);
 
 
-    if (indexToRemove !== -1)
-    {
+    if (indexToRemove !== -1) {
         let removedItem = dictionary.splice(indexToRemove, 1)[0];
         tempDeleted.push(removedItem);
     }
@@ -169,12 +214,10 @@ function deleteItem(item)
     const undoBtn = document.createElement('button');
     undoBtn.className = 'toast-undo-btn';
     undoBtn.textContent = 'Undo';
-    undoBtn.onclick = () =>
-    {
+    undoBtn.onclick = () => {
 
         // Step 2: Undo removal
-        if (tempDeleted.length > 0)
-        {
+        if (tempDeleted.length > 0) {
             let lastDeleted = tempDeleted.pop(); // get last removed item
             dictionary.splice(indexToRemove, 0, lastDeleted); // insert back at same position
         }
@@ -198,36 +241,36 @@ function deleteItem(item)
 renderList();
 
 // ===================== ADD WORD =====================
-document.getElementById("addWordForm").addEventListener("submit", e =>
-{
+document.getElementById("addWordForm").addEventListener("submit", e => {
     e.preventDefault();
 
     const word = document.getElementById("wordInput").value.trim();
     const translation = document.getElementById("translationInput").value.trim();
     if (!word || !translation) return;
-    if (editingIndex !== null && editingIndex >= 0 && editingIndex < dictionary.length)
-    {
+    if (editingIndex !== null && editingIndex >= 0 && editingIndex < dictionary.length) {
         // save edits into existing item
-        dictionary[editingIndex] = { word, translation, favorite: true };
+        dictionary[editingIndex] = { word, translation, favorite: true, category: document.getElementById('categorySelect').value || 'Uncategorized' };
         editingIndex = null;
         // restore submit button text + hide cancel
         document.getElementById('submitBtn').textContent = 'Dodaj riječ';
         document.getElementById('cancelEditBtn').hidden = true;
-    } else
-    {
-        dictionary.push({ word, translation, favorite: true });
+    } else {
+        dictionary.push({ word, translation, favorite: true, category: document.getElementById('categorySelect').value || 'Uncategorized' });
     }
     saveDictionary();
 
     document.getElementById("wordInput").value = "";
     document.getElementById("translationInput").value = "";
+    // Reset selector but keep the "All" option so the filter dropdown remains functional
+    // Reset selector to default (no pre‑selected category) but keep the "All" option
+    populateCategorySelect("", true);
+
 
     renderList();
 });
 
 // cancel editing handler
-document.getElementById('cancelEditBtn').addEventListener('click', () =>
-{
+document.getElementById('cancelEditBtn').addEventListener('click', () => {
     editingIndex = null;
     document.getElementById('wordInput').value = '';
     document.getElementById('translationInput').value = '';
@@ -236,8 +279,7 @@ document.getElementById('cancelEditBtn').addEventListener('click', () =>
 });
 
 // ===================== SEARCH / FILTER =====================
-document.getElementById("searchInput").addEventListener("input", function ()
-{
+document.getElementById("searchInput").addEventListener("input", function () {
     const query = this.value.toLowerCase();
     const filtered = dictionary.filter(item =>
         item.word.toLowerCase().includes(query) ||
@@ -246,11 +288,11 @@ document.getElementById("searchInput").addEventListener("input", function ()
     renderList(filtered);
 });
 
+
 // ===================== DARK MODE =====================
 const darkModeToggle = document.getElementById("darkModeToggle");
 
-darkModeToggle.addEventListener("click", () =>
-{
+darkModeToggle.addEventListener("click", () => {
     document.body.classList.toggle("dark-mode");
     localStorage.setItem("darkMode",
         document.body.classList.contains("dark-mode") ? "enabled" : "disabled"
@@ -258,45 +300,36 @@ darkModeToggle.addEventListener("click", () =>
     updateDarkModeButton();
 });
 
-function updateDarkModeButton()
-{
+function updateDarkModeButton() {
     darkModeToggle.textContent =
         document.body.classList.contains("dark-mode") ? "Light Mode" : "Dark Mode";
 }
 
-if (localStorage.getItem("darkMode") === "enabled")
-{
+if (localStorage.getItem("darkMode") === "enabled") {
     document.body.classList.add("dark-mode");
 }
 updateDarkModeButton();
 
 // ===================== PASTE FROM CLIPBOARD (inline icons) =====================
-document.querySelectorAll('.paste-icon').forEach(btn =>
-{
-    btn.addEventListener('click', async () =>
-    {
+document.querySelectorAll('.paste-icon').forEach(btn => {
+    btn.addEventListener('click', async () => {
         const targetId = btn.dataset.target;
         const targetEl = document.getElementById(targetId);
         if (!targetEl) return;
 
-        try
-        {
+        try {
             const text = await navigator.clipboard.readText();
             // If clipboard contains a `—` or `:` split into two halves and prefer the first half
-            if (text.includes('—') || text.includes(':'))
-            {
+            if (text.includes('—') || text.includes(':')) {
                 // guess: if user wants the word field, prefer the left side; for translation field, prefer the right side
                 const parts = text.includes('—') ? text.split('—') : text.split(':');
-                if (targetId === 'wordInput')
-                {
+                if (targetId === 'wordInput') {
                     targetEl.value = (parts[0] || '').trim();
-                } else
-                {
+                } else {
                     // translation input
                     targetEl.value = (parts[1] || parts[0] || '').trim();
                 }
-            } else
-            {
+            } else {
                 targetEl.value = text.trim();
             }
 
@@ -305,8 +338,7 @@ document.querySelectorAll('.paste-icon').forEach(btn =>
             btn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M20 6L9 17l-5-5" stroke="#16a34a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
             setTimeout(() => btn.innerHTML = previousHTML, 900);
 
-        } catch (err)
-        {
+        } catch (err) {
             console.error('Clipboard read failed', err);
             const previousHTML = btn.innerHTML;
             // small error mark
@@ -318,8 +350,7 @@ document.querySelectorAll('.paste-icon').forEach(btn =>
 });
 
 // ===================== EXPORT / IMPORT =====================
-function downloadBlob(filename, content, type = 'application/octet-stream')
-{
+function downloadBlob(filename, content, type = 'application/octet-stream') {
     const blob = new Blob([content], { type });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -331,29 +362,23 @@ function downloadBlob(filename, content, type = 'application/octet-stream')
     URL.revokeObjectURL(url);
 }
 
-document.getElementById('exportJsonBtn').addEventListener('click', () =>
-{
-    try
-    {
+document.getElementById('exportJsonBtn').addEventListener('click', () => {
+    try {
         const json = JSON.stringify(dictionary, null, 2);
         downloadBlob('dictionary.json', json, 'application/json;charset=utf-8');
         const s = document.getElementById('importStatus');
         if (s) s.textContent = 'Exported JSON.';
-    } catch (err)
-    {
+    } catch (err) {
         console.error(err);
         alert('Export JSON failed.');
     }
 });
 
-document.getElementById('exportCsvBtn').addEventListener('click', () =>
-{
-    try
-    {
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    try {
         // build CSV with header and quoted fields
         const rows = ['"word","translation"'];
-        dictionary.forEach(item =>
-        {
+        dictionary.forEach(item => {
             const w = String(item.word).replace(/"/g, '""');
             const t = String(item.translation).replace(/"/g, '""');
             rows.push(`"${w}","${t}"`);
@@ -363,8 +388,7 @@ document.getElementById('exportCsvBtn').addEventListener('click', () =>
         downloadBlob('dictionary.csv', csv, 'text/csv;charset=utf-8');
         const s = document.getElementById('importStatus');
         if (s) s.textContent = 'Exported CSV.';
-    } catch (err)
-    {
+    } catch (err) {
         console.error(err);
         alert('Export CSV failed.');
     }
@@ -373,41 +397,32 @@ document.getElementById('exportCsvBtn').addEventListener('click', () =>
 // Import button clicks the hidden file input
 const importBtn = document.getElementById('importBtn');
 const importFile = document.getElementById('importFile');
-if (importBtn && importFile)
-{
+if (importBtn && importFile) {
     importBtn.addEventListener('click', () => importFile.click());
 }
 
-function parseCSV(text)
-{
+function parseCSV(text) {
     // basic CSV parser supporting quoted fields and escaped "" inside quotes
     const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
     if (!lines.length) return [];
 
-    function parseLine(line)
-    {
+    function parseLine(line) {
         const cols = [];
         let cur = '';
         let inQuotes = false;
-        for (let i = 0; i < line.length; i++)
-        {
+        for (let i = 0; i < line.length; i++) {
             const ch = line[i];
-            if (ch === '"')
-            {
-                if (inQuotes && line[i + 1] === '"')
-                {
+            if (ch === '"') {
+                if (inQuotes && line[i + 1] === '"') {
                     cur += '"';
                     i++; // skip escaped quote
-                } else
-                {
+                } else {
                     inQuotes = !inQuotes;
                 }
-            } else if (ch === ',' && !inQuotes)
-            {
+            } else if (ch === ',' && !inQuotes) {
                 cols.push(cur);
                 cur = '';
-            } else
-            {
+            } else {
                 cur += ch;
             }
         }
@@ -421,8 +436,7 @@ function parseCSV(text)
     let colTranslation = 1;
 
     const lowerHeader = header.map(h => h.toLowerCase());
-    if (lowerHeader.includes('word') || lowerHeader.includes('translation') || lowerHeader.includes('translation'))
-    {
+    if (lowerHeader.includes('word') || lowerHeader.includes('translation') || lowerHeader.includes('translation')) {
         // header row exists
         start = 1;
         colWord = lowerHeader.findIndex(h => h.includes('word'));
@@ -432,8 +446,7 @@ function parseCSV(text)
     }
 
     const result = [];
-    for (let i = start; i < lines.length; i++)
-    {
+    for (let i = start; i < lines.length; i++) {
         const cols = parseLine(lines[i]);
         const word = (cols[colWord] || '').trim();
         const translation = (cols[colTranslation] || '').trim();
@@ -442,41 +455,32 @@ function parseCSV(text)
     return result;
 }
 
-importFile.addEventListener('change', async function ()
-{
+importFile.addEventListener('change', async function () {
     const statusEl = document.getElementById('importStatus');
     if (!this.files || !this.files.length) return;
     const file = this.files[0];
     const text = await file.text();
 
     let parsed = [];
-    try
-    {
-        if (file.name.toLowerCase().endsWith('.json'))
-        {
+    try {
+        if (file.name.toLowerCase().endsWith('.json')) {
             const data = JSON.parse(text);
             if (!Array.isArray(data)) throw new Error('JSON must be an array');
             parsed = data.map(d => ({ word: String(d.word || '').trim(), translation: String(d.translation || '').trim() }));
-        } else if (file.name.toLowerCase().endsWith('.csv'))
-        {
+        } else if (file.name.toLowerCase().endsWith('.csv')) {
             parsed = parseCSV(text);
-        } else
-        {
+        } else {
             // try JSON first, then CSV
-            try
-            {
+            try {
                 const data = JSON.parse(text);
-                if (Array.isArray(data))
-                {
+                if (Array.isArray(data)) {
                     parsed = data.map(d => ({ word: String(d.word || '').trim(), translation: String(d.translation || '').trim() }));
                 }
-            } catch (e)
-            {
+            } catch (e) {
                 parsed = parseCSV(text);
             }
         }
-    } catch (err)
-    {
+    } catch (err) {
         console.error(err);
         if (statusEl) statusEl.textContent = 'Invalid import file (parse error).';
         this.value = '';
@@ -485,8 +489,7 @@ importFile.addEventListener('change', async function ()
 
     // validate
     parsed = parsed.filter(p => p && p.word && typeof p.word === 'string');
-    if (!parsed.length)
-    {
+    if (!parsed.length) {
         if (statusEl) statusEl.textContent = 'No valid rows found in file.';
         this.value = '';
         return;
@@ -494,11 +497,9 @@ importFile.addEventListener('change', async function ()
 
     // merge: add items that are not present (match exact word+translation)
     let added = 0;
-    parsed.forEach(it =>
-    {
+    parsed.forEach(it => {
         const exists = dictionary.some(d => d.word === it.word && d.translation === it.translation);
-        if (!exists)
-        {
+        if (!exists) {
             dictionary.push(it);
             added++;
         }
@@ -513,8 +514,7 @@ importFile.addEventListener('change', async function ()
 });
 
 // ===================== GOOGLE TRANSLATE (simple) =====================
-document.getElementById("translateBtn").addEventListener("click", () =>
-{
+document.getElementById("translateBtn").addEventListener("click", () => {
     const word = document.getElementById("wordInput").value.trim();
     if (!word) return alert("Unesi riječ.");
 
@@ -523,8 +523,7 @@ document.getElementById("translateBtn").addEventListener("click", () =>
 });
 
 // ===================== URL ?word=xxx =====================
-(function ()
-{
+(function () {
     const word = new URLSearchParams(window.location.search).get("word");
     if (!word) return;
 
@@ -533,25 +532,21 @@ document.getElementById("translateBtn").addEventListener("click", () =>
 })();
 
 // ===================== SAVE WORD FROM BOOKMARKLET =====================
-function saveWordToDictionary(word, translation = "")
-{
+function saveWordToDictionary(word, translation = "") {
     word = word.trim();
     translation = translation.trim();
 
     if (!word) return;
 
-    if (!dictionary.some(i => i.word === word && i.translation === translation))
-    {
+    if (!dictionary.some(i => i.word === word && i.translation === translation)) {
         dictionary.push({ word, translation });
         saveDictionary();
         renderList();
     }
 }
 
-window.addEventListener("message", event =>
-{
-    if (event.data.type === "SET_WORD")
-    {
+window.addEventListener("message", event => {
+    if (event.data.type === "SET_WORD") {
         const word = event.data.word;
 
         document.getElementById("wordInput").value = word;
