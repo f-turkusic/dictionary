@@ -1,5 +1,5 @@
-// At the top of app.js, create a list of predefined categories
-const CATEGORIES = [
+// ===================== CATEGORIES (dynamic) + unified filter =====================
+const DEFAULT_CATEGORIES = [
     "Uncategorized",  // default
     "Animals",
     "Food",
@@ -12,24 +12,34 @@ const CATEGORIES = [
     "Common Phrases"
 ];
 
-/**
- * Populate the single category <select> (id="categorySelect").
- * When `includeAll` is true, an "All" option is added as the first entry.
- * The `selected` argument marks the option that should be pre‑selected.
- */
-function populateCategorySelect(selected = "", includeAll = false) {
-    const select = document.getElementById('categorySelect');
-    select.innerHTML = ""; // clear any previous options
+// ===================== DATA & LOCALSTORAGE =====================
+let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
+let editingIndex = null; // index of item being edited, or null
 
-    if (includeAll) {
-        const allOpt = document.createElement('option');
-        allOpt.value = "All";
-        allOpt.textContent = "All";
-        if (selected === "All") allOpt.selected = true;
-        select.appendChild(allOpt);
-    }
+// Unified filter state
+let filterState = {
+    category: 'All',
+    favoritesOnly: false,
+    search: ''
+};
 
-    CATEGORIES.forEach(cat => {
+function saveDictionary() {
+    localStorage.setItem("dictionary", JSON.stringify(dictionary));
+}
+
+// Build a sorted unique list of categories from data + defaults
+function getAllCategories() {
+    const fromData = Array.from(new Set((dictionary || []).map(i => i && i.category).filter(Boolean)));
+    const merged = Array.from(new Set([...(fromData || []), ...DEFAULT_CATEGORIES]));
+    return merged.sort((a, b) => a.localeCompare(b));
+}
+
+function populateCategoryInput(selected = "") {
+    const select = document.getElementById('categoryInput');
+    if (!select) return;
+    const cats = getAllCategories();
+    select.innerHTML = "";
+    cats.forEach(cat => {
         const opt = document.createElement('option');
         opt.value = cat;
         opt.textContent = cat;
@@ -38,64 +48,57 @@ function populateCategorySelect(selected = "", includeAll = false) {
     });
 }
 
-/**
- * Returns the dictionary filtered by the currently selected value of the
- * shared `categorySelect` element. "All" means no filtering.
- */
-function getFilteredByCategory() {
-    const chosen = document.getElementById('categorySelect').value;
-    if (chosen === "All") {
-        return dictionary;
-    }
-    return dictionary.filter(item => item.category === chosen);
+function populateCategoryFilter(selected = "All") {
+    const select = document.getElementById('categoryFilter');
+    if (!select) return;
+    const cats = getAllCategories();
+    select.innerHTML = "";
+    const allOpt = document.createElement('option');
+    allOpt.value = "All";
+    allOpt.textContent = "All";
+    if (selected === "All") allOpt.selected = true;
+    select.appendChild(allOpt);
+    cats.forEach(cat => {
+        const opt = document.createElement('option');
+        opt.value = cat;
+        opt.textContent = cat;
+        if (cat === selected) opt.selected = true;
+        select.appendChild(opt);
+    });
 }
 
-// Apply filter when the button is pressed
-document.getElementById('filterCategoryBtn').addEventListener('click', () => {
-    renderList(getFilteredByCategory());
-});
-
-// Also filter automatically when the user changes the dropdown
-document.getElementById('categorySelect').addEventListener('change', () => {
-    renderList(getFilteredByCategory());
-});
-
-// Initial population – include the "All" option for filtering purposes
-populateCategorySelect("All", true);
-
-// ===================== DATA & LOCALSTORAGE =====================
-let dictionary = JSON.parse(localStorage.getItem("dictionary")) || [];
-let editingIndex = null; // index of item being edited, or null
-
-// Create a global variable to track filter state
-let favoritesFilterActive = false;
-
-// Add event listener to the filter button
-document.getElementById('filterFavoritesBtn').addEventListener('click', () => {
-    // Toggle filter state
-    favoritesFilterActive = !favoritesFilterActive;
-
-    // Update button text
-    const btn = document.getElementById('filterFavoritesBtn');
-    btn.textContent = favoritesFilterActive
-        ? 'Show All Words'
-        : 'Show Favorites Only';
-
-    // Render filtered or full list
-    if (favoritesFilterActive) {
-        const favorited = dictionary.filter(item => item.favorite === true);
-        renderList(favorited);
-    } else {
-        renderList(dictionary);
-    }
-});
-
-
-function saveDictionary() {
-    localStorage.setItem("dictionary", JSON.stringify(dictionary));
+function refreshCategoryOptions() {
+    const inputEl = document.getElementById('categoryInput');
+    const filterEl = document.getElementById('categoryFilter');
+    const currentInput = inputEl ? inputEl.value : "";
+    const currentFilter = filterEl ? filterEl.value : (filterState ? filterState.category : "All");
+    populateCategoryInput(currentInput);
+    populateCategoryFilter(currentFilter);
 }
 
 // ===================== RENDER LIST =====================
+function getFilteredList() {
+    let list = dictionary.slice();
+    if (filterState.category && filterState.category !== 'All') {
+        list = list.filter(i => (i && (i.category || 'Uncategorized')) === filterState.category);
+    }
+    if (filterState.favoritesOnly) {
+        list = list.filter(i => i && i.favorite === true);
+    }
+    if (filterState.search) {
+        const q = filterState.search.toLowerCase();
+        list = list.filter(i =>
+            String(i.word || '').toLowerCase().includes(q) ||
+            String(i.translation || '').toLowerCase().includes(q)
+        );
+    }
+    return list;
+}
+
+function renderFiltered() {
+    renderList(getFilteredList());
+}
+
 function renderList(list = dictionary) {
     const listDiv = document.getElementById("wordList");
     listDiv.innerHTML = "";
@@ -147,7 +150,6 @@ function renderList(list = dictionary) {
 }
 
 function toggleFavorite(item) {
-
     // Find the item in dictionary
     const index = dictionary.indexOf(item);
     if (index === -1) return;
@@ -158,15 +160,9 @@ function toggleFavorite(item) {
     // Save to localStorage
     saveDictionary();
 
-    // Re-render the list (this will show the new star state)
-    // If favorites filter is active, apply it
-    if (favoritesFilterActive) {
-        renderList(dictionary.filter(item => item.favorite));
-    } else {
-        renderList();
-    }
+    // Re-render with unified filters
+    renderFiltered();
 }
-
 
 function editItem(item) {
     // Put the clicked item into the form so user can edit inline
@@ -182,8 +178,8 @@ function editItem(item) {
     document.getElementById('submitBtn').textContent = 'Snimi izmjenu';
     document.getElementById('cancelEditBtn').hidden = false;
 
-    // inside editItem()
-    populateCategorySelect(item.category);
+    // set category input to current item's category
+    populateCategoryInput(item.category);
 }
 
 function deleteItem(item) {
@@ -192,16 +188,12 @@ function deleteItem(item) {
 
     let tempDeleted = [];
 
-    // tempDeleted.push(removedItem);
-
     let indexToRemove = dictionary.indexOf(item);
 
-
     if (indexToRemove !== -1) {
-        let removedItem = dictionary.splice(indexToRemove, 1)[0];
-        tempDeleted.push(removedItem);
+        let removed = dictionary.splice(indexToRemove, 1)[0];
+        tempDeleted.push(removed);
     }
-
 
     dictionary = dictionary.filter(i => i !== item);
     // Show toast notification
@@ -215,30 +207,23 @@ function deleteItem(item) {
     undoBtn.className = 'toast-undo-btn';
     undoBtn.textContent = 'Undo';
     undoBtn.onclick = () => {
-
-        // Step 2: Undo removal
+        // Undo removal
         if (tempDeleted.length > 0) {
             let lastDeleted = tempDeleted.pop(); // get last removed item
             dictionary.splice(indexToRemove, 0, lastDeleted); // insert back at same position
         }
-
-
-        // dictionary.push(removedItem);
         saveDictionary();
-        renderList();
+        refreshCategoryOptions();
+        renderFiltered();
         toast.remove();
     };
 
     toast.appendChild(undoBtn);
 
-    // setTimeout(() => toast.remove(), 4000);
-
     saveDictionary();
-    renderList();
+    refreshCategoryOptions();
+    renderFiltered();
 }
-
-// Initial render
-renderList();
 
 // ===================== ADD WORD =====================
 document.getElementById("addWordForm").addEventListener("submit", e => {
@@ -246,27 +231,27 @@ document.getElementById("addWordForm").addEventListener("submit", e => {
 
     const word = document.getElementById("wordInput").value.trim();
     const translation = document.getElementById("translationInput").value.trim();
+    const category = (document.getElementById('categoryInput') && document.getElementById('categoryInput').value) || 'Uncategorized';
     if (!word || !translation) return;
+
     if (editingIndex !== null && editingIndex >= 0 && editingIndex < dictionary.length) {
         // save edits into existing item
-        dictionary[editingIndex] = { word, translation, favorite: true, category: document.getElementById('categorySelect').value || 'Uncategorized' };
+        dictionary[editingIndex] = { word, translation, favorite: true, category };
         editingIndex = null;
         // restore submit button text + hide cancel
         document.getElementById('submitBtn').textContent = 'Dodaj riječ';
         document.getElementById('cancelEditBtn').hidden = true;
     } else {
-        dictionary.push({ word, translation, favorite: true, category: document.getElementById('categorySelect').value || 'Uncategorized' });
+        dictionary.push({ word, translation, favorite: true, category });
     }
     saveDictionary();
 
     document.getElementById("wordInput").value = "";
     document.getElementById("translationInput").value = "";
-    // Reset selector but keep the "All" option so the filter dropdown remains functional
-    // Reset selector to default (no pre‑selected category) but keep the "All" option
-    populateCategorySelect("", true);
 
-
-    renderList();
+    // Refresh category options and re-render
+    refreshCategoryOptions();
+    renderFiltered();
 });
 
 // cancel editing handler
@@ -280,14 +265,26 @@ document.getElementById('cancelEditBtn').addEventListener('click', () => {
 
 // ===================== SEARCH / FILTER =====================
 document.getElementById("searchInput").addEventListener("input", function () {
-    const query = this.value.toLowerCase();
-    const filtered = dictionary.filter(item =>
-        item.word.toLowerCase().includes(query) ||
-        item.translation.toLowerCase().includes(query)
-    );
-    renderList(filtered);
+    filterState.search = this.value.trim();
+    renderFiltered();
 });
 
+const categoryFilterEl = document.getElementById('categoryFilter');
+if (categoryFilterEl) {
+    categoryFilterEl.addEventListener('change', () => {
+        filterState.category = categoryFilterEl.value;
+        renderFiltered();
+    });
+}
+
+const filterFavoritesBtn = document.getElementById('filterFavoritesBtn');
+if (filterFavoritesBtn) {
+    filterFavoritesBtn.addEventListener('click', () => {
+        filterState.favoritesOnly = !filterState.favoritesOnly;
+        filterFavoritesBtn.textContent = filterState.favoritesOnly ? 'Show All Words' : 'Show Favorites Only';
+        renderFiltered();
+    });
+}
 
 // ===================== DARK MODE =====================
 const darkModeToggle = document.getElementById("darkModeToggle");
@@ -506,7 +503,8 @@ importFile.addEventListener('change', async function () {
     });
 
     saveDictionary();
-    renderList();
+    refreshCategoryOptions();
+    renderFiltered();
 
     if (statusEl) statusEl.textContent = added ? `Imported ${added} new item(s).` : 'No new items imported.';
     // reset file input
@@ -541,7 +539,8 @@ function saveWordToDictionary(word, translation = "") {
     if (!dictionary.some(i => i.word === word && i.translation === translation)) {
         dictionary.push({ word, translation });
         saveDictionary();
-        renderList();
+        refreshCategoryOptions();
+        renderFiltered();
     }
 }
 
@@ -554,3 +553,7 @@ window.addEventListener("message", event => {
         document.getElementById("translationInput").focus();
     }
 });
+
+// ===================== INITIALIZE =====================
+refreshCategoryOptions();
+renderFiltered();
