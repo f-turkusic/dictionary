@@ -71,6 +71,7 @@ h1 {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
   margin-bottom: 16px;
 }
 
@@ -157,6 +158,18 @@ button.ghost {
   flex-wrap: wrap;
   gap: 8px;
   align-items: center;
+}
+
+/* Keep label + select together */
+.control-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.control-inline select#languageSelect {
+  min-width: 110px;
 }
 
 .filters label {

@@ -228,13 +228,13 @@ function renderList(list) {
     const editBtn = document.createElement("button");
     editBtn.className = "edit-btn";
     editBtn.innerHTML = "✎";
-    editBtn.title = "Uredi";
+    editBtn.title = "Edit";
     editBtn.onclick = () => editItem(item);
 
     const deleteBtn = document.createElement("button");
     deleteBtn.className = "delete-btn";
     deleteBtn.innerHTML = "X";
-    deleteBtn.title = "Obriši";
+    deleteBtn.title = "Delete";
     deleteBtn.onclick = () => deleteItem(item);
 
     actions.append(starBtn, editBtn, deleteBtn);
@@ -265,7 +265,7 @@ function editItem(item) {
   document.getElementById("translationInput").value = String(item.translation || "");
   document.getElementById("wordInput").focus();
 
-  document.getElementById("submitBtn").textContent = "Snimi izmjenu";
+  document.getElementById("submitBtn").textContent = "Save changes";
   document.getElementById("cancelEditBtn").hidden = false;
 
   populateCategoryInput(item.category);
@@ -330,7 +330,7 @@ document.getElementById("addWordForm").addEventListener("submit", (e) => {
     updated[editingIndex] = { word, translation, favorite: prevFav, category };
     setCurrentDictionary(updated);
     editingIndex = null;
-    document.getElementById("submitBtn").textContent = "Dodaj riječ";
+    document.getElementById("submitBtn").textContent = "Add Word";
     document.getElementById("cancelEditBtn").hidden = true;
   } else {
     pushWordToCurrent({ word, translation, favorite: true, category });
@@ -348,7 +348,7 @@ document.getElementById("cancelEditBtn").addEventListener("click", () => {
   editingIndex = null;
   document.getElementById("wordInput").value = "";
   document.getElementById("translationInput").value = "";
-  document.getElementById("submitBtn").textContent = "Dodaj riječ";
+  document.getElementById("submitBtn").textContent = "Add Word";
   document.getElementById("cancelEditBtn").hidden = true;
 });
 
@@ -425,7 +425,7 @@ document.querySelectorAll(".paste-icon").forEach((btn) => {
       btn.innerHTML =
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 9v4" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17h.01" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#b91c1c" stroke-width="1.2"/></svg>';
       setTimeout(() => (btn.innerHTML = previousHTML), 900);
-      alert("Ne mogu dohvatiti clipboard.");
+      alert("Unable to read clipboard.");
     }
   });
 });
@@ -607,11 +607,12 @@ if (importFile) {
 
 // ===================== GOOGLE TRANSLATE (simple) =====================
 document.getElementById("translateBtn").addEventListener("click", () => {
-  const word = document.getElementById("wordInput").value.trim();
-  if (!word) return alert("Unesi riječ.");
+const raw = document.getElementById("wordInput").value.trim();
+if (!raw) return alert("Please enter a word.");
+const word = encodeURIComponent(raw);
 
-  const parts = (selectedLang || "de-bs").split("-");
-  const tl = parts[1] || "bs";
+const parts = (selectedLang || "de-bs").split("-");
+const tl = parts[1] || "bs";
   const url = `https://translate.google.com/?sl=auto&tl=${encodeURIComponent(
     tl
   )}&text=${encodeURIComponent(word)}&op=translate`;
