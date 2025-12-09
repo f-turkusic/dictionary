@@ -425,7 +425,7 @@ document.querySelectorAll(".paste-icon").forEach((btn) => {
       btn.innerHTML =
         '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M12 9v4" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 17h.01" stroke="#b91c1c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="12" cy="12" r="9" stroke="#b91c1c" stroke-width="1.2"/></svg>';
       setTimeout(() => (btn.innerHTML = previousHTML), 900);
-      alert("Unable to read clipboard.");
+      showToast("Unable to read clipboard.");
     }
   });
 });
@@ -608,7 +608,7 @@ if (importFile) {
 // ===================== GOOGLE TRANSLATE (simple) =====================
 document.getElementById("translateBtn").addEventListener("click", () => {
 const raw = document.getElementById("wordInput").value.trim();
-if (!raw) return alert("Please enter a word.");
+if (!raw) { showToast("Please enter a word."); return; }
 const word = encodeURIComponent(raw);
 
 const parts = (selectedLang || "de-bs").split("-");

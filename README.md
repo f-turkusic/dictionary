@@ -38,3 +38,46 @@ app.get('*', (req,res) => { res.sendFile(path.join(__dirname, 'public','index.ht
 If you need help diagnosing the response headers you get from your server, paste the headers here and I can help interpret them.
 
 <!-- Previously an inline translate UI section was here, but the project was reverted to a simpler translate button beside the word input. -->
+
+---
+
+## Bookmarklet: Send selected word to Dictionary
+
+Use this bookmarklet to send the currently selected word on any page to your Dictionary app.
+
+- Create the bookmarklet
+  - Chrome/Edge: Right-click the bookmarks bar → Add page…
+  - Firefox: Right-click the bookmarks toolbar → New Bookmark…
+  - Name: `Send to Dictionary`
+  - URL (paste exactly, including the `javascript:` prefix):
+
+```
+javascript:(function(){const w=window.getSelection().toString().trim();if(!w){alert("Select a word first.");return;}const d=window.open("http://localhost:5500/dictionary.html","dictionary_app");setTimeout(()=>{d.postMessage({type:"SET_WORD",word:w},"*");},400);})();
+```
+
+- Use it
+  - Start your local server and ensure the app is available at `http://localhost:5500/dictionary.html` (adjust if different)
+  - Select a word on any webpage
+  - Click the bookmarklet; it opens or focuses the Dictionary tab and sends the word
+
+- Notes
+  - Pop-up blockers may prevent opening the window. Allow pop-ups for the current site.
+  - The window name `dictionary_app` keeps reusing the same tab.
+  - For production, replace the localhost URL with your deployed URL.
+
+- Receiving the message in the app (optional snippet)
+  Add this listener to your app to receive the word and focus the input. You can further enhance it (e.g., show a toast, switch language, etc.).
+
+```js
+window.addEventListener('message', (event) => {
+  // Optionally validate origin: if (event.origin !== 'http://localhost:5500') return;
+  const data = event.data || {};
+  if (data.type === 'SET_WORD' && typeof data.word === 'string') {
+    const input = document.getElementById('wordInput');
+    if (input) {
+      input.value = data.word.trim();
+      input.focus();
+    }
+  }
+});
+```
